@@ -1,5 +1,7 @@
 streamlit
-requests
 pandas
+requests
 Pillow
 urllib3
+openpyxl
+xlsxwriter
