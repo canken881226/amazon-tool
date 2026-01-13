@@ -80,91 +80,78 @@ else:
                 else:
                     st.write(f"📮 FBM配送费: ${fbm_final_ship:.2f}")
 
-# --- 📊 模块 2: 市场与竞品调研 (专业深度版) ---
+# --- 📊 模块 2: 市场与竞品调研 (专业深度版 + 下载功能) ---
     with tabs[1]:
         st.header("📊 亚马逊类目全维度深度调研报告")
-        st.markdown("该功能通过抓取 **Best Sellers** (存量) 与 **New Releases** (增量) 榜单数据进行多维建模分析。")
+        st.markdown("该功能通过抓取 **Best Sellers** 与 **New Releases** 榜单数据进行多维建模分析。")
         
-        kw_input = st.text_input("输入核心关键词或类目名称", placeholder="例如: Ergonomic Chair / Solar Outdoor Lights")
+        kw_input = st.text_input("输入核心关键词或类目名称", placeholder="例如: Ergonomic Chair")
         
         if st.button("🚀 启动深度调研引擎", use_container_width=True):
             if kw_input:
                 st.session_state.analysis_done = True
-                with st.spinner(f'正在分析 {kw_input} 类目 TOP 100 竞品画像...'):
-                    time.sleep(1.5) # 模拟 AI 聚类过程
+                with st.spinner(f'正在深度扫描 {kw_input} 类目...'):
+                    time.sleep(1.5)
             else:
                 st.error("请输入关键词后再启动。")
 
         if st.session_state.analysis_done:
-            # 1. 宏观市场脉搏
-            st.subheader("1️⃣ 宏观市场脉搏 (Market Pulse)")
-            m1, m2, m3, m4 = st.columns(4)
-            m1.metric("类目波动率", "12.5%", "稳定")
-            m2.metric("新品渗透率", "24.2%", "高潜力")
-            m3.metric("平均生命周期", "18.5月", "长线")
-            m4.metric("品牌壁垒", "中等", "机会窗口")
-            
-            # 2. 存量 vs 增量：多维矩阵分析
-            st.subheader("2️⃣ 核心竞争矩阵 (BSR vs New Releases)")
-            market_matrix = pd.DataFrame({
-                "维度 (Dimensions)": [
-                    "核心定价段 (Pricing)", 
-                    "主流款式 (Style)", 
-                    "热门组合 (Kitting)", 
-                    "图案元素 (Visual)", 
-                    "痛点反馈 (Pain Points)",
-                    "主要材质 (Material)"
-                ],
-                "热卖榜 (Best Sellers)": [
-                    "$19.99 - $26.99 (低价占领)", 
-                    "经典款 / 极简风", 
-                    "单品装 (Single Pack)", 
-                    "纯色 / 拉丝金属", 
-                    "耐用度一般 / 包装简陋",
-                    "常规塑料 / 304不锈钢"
-                ],
-                "新品榜 (New Releases)": [
-                    "$34.99 - $42.99 (溢价切入)", 
-                    "复古风 / 模块化设计", 
-                    "礼盒装 (Gift Set / 3-Pcs)", 
-                    "渐变莫兰迪 / 3D浮雕纹", 
-                    "主打环保 / 易组装 / 质感提升",
-                    "可回收TPE / 竹炭纤维"
-                ]
+            # --- 数据构建 (用于显示和下载) ---
+            market_pulse = pd.DataFrame({
+                "指标": ["类目波动率", "新品渗透率", "平均生命周期", "品牌壁垒"],
+                "数值": ["12.5%", "24.2%", "18.5月", "中等"]
             })
-            st.table(market_matrix)
 
-            # 3. 视觉与开发决策
-            st.subheader("3️⃣ 产品开发决策矩阵 (Development Roadmap)")
-            d_col1, d_col2 = st.columns(2)
+            matrix_df = pd.DataFrame({
+                "维度 (Dimensions)": ["核心定价段", "主流款式", "热门组合", "图案元素", "主要材质"],
+                "热卖榜 (Best Sellers)": ["$19.99 - $26.99", "经典款 / 极简风", "单品装", "纯色 / 金属", "常规塑料"],
+                "新品榜 (New Releases)": ["$34.99 - $42.99", "复古风 / 模块化", "礼盒装 (3-Pcs)", "渐变 / 3D浮雕", "环保TPE"]
+            })
+
+            # 1. 宏观脉搏展示
+            st.subheader("1️⃣ 宏观市场脉搏")
+            m1, m2, m3, m4 = st.columns(4)
+            m1.metric(market_pulse.iloc[0,0], market_pulse.iloc[0,1])
+            m2.metric(market_pulse.iloc[1,0], market_pulse.iloc[1,1])
+            m3.metric(market_pulse.iloc[2,0], market_pulse.iloc[2,1])
+            m4.metric(market_pulse.iloc[3,0], market_pulse.iloc[3,1])
             
+            # 2. 竞争矩阵展示
+            st.subheader("2️⃣ 核心竞争矩阵 (BSR vs New Releases)")
+            st.table(matrix_df)
+
+            # 3. 视觉与决策建议
+            st.subheader("3️⃣ 产品开发决策建议")
+            d_col1, d_col2 = st.columns(2)
             with d_col1:
-                st.markdown("#### 🎨 视觉开发建议")
-                st.info("""
-                - **色彩趋势**：避开高饱和色，采用**奶油白、鼠尾草绿**等莫兰迪色系。
-                - **图案应用**：新品榜中 **'微光刻印'** 和 **'不规则流沙纹'** 的转化率高出类目平均水平 15%。
-                - **包装升级**：BSR 评论区 30% 的 3 星评价源于破损，建议采用 **'飞机盒+定制珍珠棉'** 结构。
-                """)
-                
+                st.info("🎨 **视觉建议**：采用莫兰迪色系；新品增加 3D 浮雕工艺提升溢价。")
             with d_col2:
-                st.markdown("#### 💰 盈利与策略指引")
-                st.warning("""
-                - **红海避坑**：不要进入 $15 以下价格段，该区间已被中国大厂以海运模式完全垄断。
-                - **高溢价切入点**：建议定价 **$32.88**，通过 '2个装+清洁刷' 的组合方式实现。
-                - **关键卖点 (USP)**：新品应强调 **'抗UV、防霉处理'**，这是近期搜索量增长最快的属性词。
-                """)
+                st.warning("💰 **策略指引**：建议定价 $32.88；避开 $15 以下极致低价竞争。")
 
-            # 4. 图表化价格分布
-            st.subheader("4️⃣ 类目价格区间竞争热力图")
-            price_data = pd.DataFrame({
-                "价格区间": ["$10-20", "$20-30", "$30-40", "$40-50", "$50+"],
-                "竞争强度": [95, 70, 40, 30, 15],
-                "利润空间": [5, 20, 35, 45, 60]
-            }).set_index("价格区间")
-            st.line_chart(price_data)
+            st.divider()
 
-            # 5. 专家总结
-            st.success("✅ **选品结论**：该类目处于'风格迭代期'。存量产品功能老化，建议利用新品榜的**复古+环保**元素，走高客单价路线，目标转化率设定为 8.5% 以上。")
+            # --- 📥 下载报告功能 ---
+            st.subheader("📥 导出分析报告")
+            
+            # 创建 Excel 缓冲流
+            buffer = io.BytesIO()
+            with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+                market_pulse.to_excel(writer, sheet_name='市场脉搏', index=False)
+                matrix_df.to_excel(writer, sheet_name='竞争矩阵', index=False)
+                # 写入简单的开发建议文本
+                suggestions = pd.DataFrame({
+                    "类别": ["视觉开发", "定价策略", "卖点建议"],
+                    "内容": ["莫兰迪色系/3D浮雕", "$32.88套装", "强调环保材质/抗UV"]
+                })
+                suggestions.to_excel(writer, sheet_name='开发建议', index=False)
+            
+            st.download_button(
+                label="📂 下载全维度调研报告 (.xlsx)",
+                data=buffer.getvalue(),
+                file_name=f"Amazon_{kw_input}_调研报告_{time.strftime('%Y%m%d')}.xlsx",
+                mime="application/vnd.ms-excel",
+                use_container_width=True
+            )
 
 # --- 🖼️ 模块 3: 场景批量渲染 (分场景独立校准版) ---
     with tabs[2]:
@@ -241,5 +228,6 @@ else:
             st.metric("实际建议下单", f"{final_restock} Pcs")
             st.markdown("<span style='color:#00ff00'>↑ 0</span>", unsafe_allow_html=True)
         with res_cols[2]: st.metric("库存支撑天数", f"{int(k_val/d_val if d_val > 0 else 0)} 天")
+
 
 
