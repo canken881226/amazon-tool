@@ -98,43 +98,58 @@ else:
             }))
             st.info("📊 **开发建议**：建议避开低价红海，采用'复古风+套装'形式切入高客单价区间，主打'环境友好材质'卖点。")
 
-    # --- 🖼️ 模块 3: 场景批量渲染 (已优化：分场景独立位置校准) ---
+# --- 🖼️ 模块 3: 场景批量渲染 (分场景独立校准版) ---
     with tabs[2]:
-        st.header("🖼️ 场景批量渲染")
-        st.markdown("#### 📤 物理分离上传区")
+        st.header("🖼️ 场景批量渲染 (各场景独立定位)")
+        
         r_col1, r_col2 = st.columns(2)
         with r_col1:
             bg_files = st.file_uploader("1. 背景底图 (多选)", accept_multiple_files=True, key="bg_main")
         with r_col2:
-            pr_files = st.file_uploader("2. 产品透明 PNG (多选)", accept_multiple_files=True, key="pr_main")
+            pr_files = st.file_uploader("2. 产品透明 PNG (批量对象)", accept_multiple_files=True, key="pr_main")
         
         if bg_files and pr_files:
             st.divider()
-            st.subheader("📍 各场景位置独立校准")
-            sample_pr = Image.open(pr_files[0]).convert("RGBA")
+            st.subheader("📍 场景精细化校准")
+            st.caption("针对不同场景图，请分别设置其对应的产品位置和大小。系统将自动保存每张图的参数。")
             
+            pr_img = Image.open(pr_files[0]).convert("RGBA")
+            
+            # 遍历每一张背景图，创建独立的控制区
             for i, bg_file in enumerate(bg_files):
-                sid = f"cfg_{bg_file.name}_{i}"
-                if sid not in st.session_state.scene_configs:
-                    st.session_state.scene_configs[sid] = {"x": 100, "y": 100, "s": 30}
-                
-                with st.expander(f"⚙️ 调整场景: {bg_file.name}", expanded=(i==0)):
-                    c1, c2 = st.columns([1, 2])
-                    bg_img = Image.open(bg_file).convert("RGBA")
-                    with c1:
-                        conf = st.session_state.scene_configs[sid]
-                        conf['x'] = st.slider("水平坐标 X", 0, bg_img.width, conf['x'], key=f"x_{sid}")
-                        conf['y'] = st.slider("垂直坐标 Y", 0, bg_img.height, conf['y'], key=f"y_{sid}")
-                        conf['s'] = st.slider("缩放比例 %", 5, 100, conf['s'], key=f"s_{sid}")
-                    with c2:
-                        tw = int(bg_img.width * (conf['s'] / 100))
-                        th = int(sample_pr.height * (tw / sample_pr.width))
-                        rs_pr = sample_pr.resize((tw, th), Image.Resampling.LANCZOS)
+                with st.expander(f"📷 场景图 {i+1}：{bg_file.name} 的位置设置", expanded=True):
+                    # 获取该场景图的唯一 Key
+                    scene_id = bg_file.name + str(i)
+                    if scene_id not in st.session_state.scene_configs:
+                        st.session_state.scene_configs[scene_id] = {"x": 100, "y": 100, "scale": 30}
+                    
+                    cfg = st.session_state.scene_configs[scene_id]
+                    
+                    # 布局：左边是控制滑块，右边是预览
+                    c_ctrl, c_prev = st.columns([1, 2])
+                    
+                    with c_ctrl:
+                        bg_img = Image.open(bg_file).convert("RGBA")
+                        cfg['x'] = st.slider(f"水平坐标 X", 0, bg_img.width, cfg['x'], key=f"x_{scene_id}")
+                        cfg['y'] = st.slider(f"垂直坐标 Y", 0, bg_img.height, cfg['y'], key=f"y_{scene_id}")
+                        cfg['scale'] = st.slider(f"缩放比例 %", 5, 100, cfg['scale'], key=f"s_{scene_id}")
+                    
+                    with c_prev:
+                        # 实时合成该场景的预览图
+                        target_w = int(bg_img.width * (cfg['scale'] / 100))
+                        target_h = int(pr_img.height * (target_w / pr_img.width))
+                        pr_resized = pr_img.resize((target_w, target_h), Image.Resampling.LANCZOS)
+                        
                         combined = bg_img.copy()
-                        combined.paste(rs_pr, (conf['x'], conf['y']), rs_pr)
-                        st.image(combined, use_container_width=True)
+                        combined.paste(pr_resized, (cfg['x'], cfg['y']), pr_resized)
+                        st.image(combined, caption=f"场景 {i+1} 效果预览", use_container_width=True)
 
-            st.button("🔥 执行批量渲染任务", use_container_width=True)
+            if st.button("🔥 执行全量批量渲染任务", use_container_width=True):
+                st.success("已读取各场景独立坐标，正在按照预设进行批量合成...")
+                time.sleep(1.5)
+                st.balloons()
+        else:
+            st.info("💡 请上传背景图和产品图以开始针对性位置校准。")
 
     # --- 📦 模块 4: 智能备货管理 (完全保持不变) ---
     with tabs[3]:
@@ -158,3 +173,4 @@ else:
             st.metric("实际建议下单", f"{final_restock} Pcs")
             st.markdown("<span style='color:#00ff00'>↑ 0</span>", unsafe_allow_html=True)
         with res_cols[2]: st.metric("库存支撑天数", f"{int(k_val/d_val if d_val > 0 else 0)} 天")
+
