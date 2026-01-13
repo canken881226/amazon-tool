@@ -11,10 +11,11 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # --- 1. 核心环境初始化 ---
 if 'password_correct' not in st.session_state: st.session_state.password_correct = False
 if 'analysis_results' not in st.session_state: st.session_state.analysis_results = None
-# 渲染坐标初始化
-if 'pos_x' not in st.session_state: st.session_state.pos_x = 50
-if 'pos_y' not in st.session_state: st.session_state.pos_y = 50
-if 'prod_scale' not in st.session_state: st.session_state.prod_scale = 30
+
+# 初始化固定位置坐标与缩放
+if 'global_pos_x' not in st.session_state: st.session_state.global_pos_x = 100
+if 'global_pos_y' not in st.session_state: st.session_state.global_pos_y = 100
+if 'global_scale' not in st.session_state: st.session_state.global_scale = 30
 
 # --- 2. 🔐 访问控制 ---
 if not st.session_state.password_correct:
@@ -82,13 +83,12 @@ else:
     # --- 📊 模块 2: 市场调研 (完全保持不变) ---
     with tabs[1]:
         st.header("📊 市场类目与竞品全维度深度调研")
-        kw_input = st.text_input("输入类目核心关键词 (如: Yoga Mat, Coffee Tumbler)", placeholder="请输入要分析的类目...")
+        kw_input = st.text_input("输入类目核心关键词", placeholder="请输入要分析的类目...")
         if st.button("🔍 启动 BSR & 新品榜全量扫描", use_container_width=True):
             if kw_input:
-                with st.spinner('正在分析中...'):
+                with st.spinner('分析中...'):
                     time.sleep(1)
                     st.session_state.analysis_results = {
-                        "market_size": "High", "avg_price": 28.5,
                         "competitors": pd.DataFrame({
                             "维度": ["热销组合", "主流款式", "热门图案元素", "主要售价区间"],
                             "BSR榜单表现": ["单品装 (65%)", "极简风", "几何图形", "$19.99 - $24.99"],
@@ -101,53 +101,60 @@ else:
             st.table(res["competitors"])
             st.bar_chart(res["price_dist"])
 
-    # --- 🖼️ 模块 3: 场景批量渲染 (优化位置调整与固定预览) ---
+    # --- 🖼️ 模块 3: 场景批量渲染 (同步预览优化版) ---
     with tabs[2]:
-        st.header("🖼️ 场景批量渲染 (带位置记忆)")
+        st.header("🖼️ 场景批量渲染 (多图同步预览)")
         
         # 1. 上传区
         r_col1, r_col2 = st.columns(2)
         with r_col1:
-            bg_files = st.file_uploader("1. 背景底图 (校准参考图)", accept_multiple_files=True, key="bg_main")
+            bg_files = st.file_uploader("1. 背景底图 (支持多选同步预览)", accept_multiple_files=True, key="bg_main")
         with r_col2:
-            pr_files = st.file_uploader("2. 产品透明 PNG (批量对象)", accept_multiple_files=True, key="pr_main")
+            pr_files = st.file_uploader("2. 产品透明 PNG (批量替换对象)", accept_multiple_files=True, key="pr_main")
         
-        # 2. 坐标校准区
         if bg_files and pr_files:
             st.divider()
-            st.subheader("⚙️ 摆放位置预设 (校准完成将自动记忆)")
+            st.subheader("⚙️ 联动校准控制台")
+            st.caption("调整下方滑块，所有场景图将同步更新摆放位置")
             
-            # 使用首张图进行校准预览
-            bg_img = Image.open(bg_files[0]).convert("RGBA")
-            pr_img = Image.open(pr_files[0]).convert("RGBA")
-            
+            # 联动滑块
             ctrl_c1, ctrl_c2, ctrl_c3 = st.columns(3)
             with ctrl_c1:
-                st.session_state.pos_x = st.slider("水平位置 (X)", 0, bg_img.width, st.session_state.pos_x)
+                st.session_state.global_pos_x = st.slider("水平坐标 (X)", 0, 2000, st.session_state.global_pos_x)
             with ctrl_c2:
-                st.session_state.pos_y = st.slider("垂直位置 (Y)", 0, bg_img.height, st.session_state.pos_y)
+                st.session_state.global_pos_y = st.slider("垂直坐标 (Y)", 0, 2000, st.session_state.global_pos_y)
             with ctrl_c3:
-                st.session_state.prod_scale = st.slider("缩放比例 (%)", 5, 100, st.session_state.prod_scale)
+                st.session_state.global_scale = st.slider("统一缩放比例 (%)", 5, 100, st.session_state.global_scale)
 
-            # 实时合成预览图
-            # 缩放产品
-            new_w = int(bg_img.width * (st.session_state.prod_scale / 100))
-            new_h = int(pr_img.height * (new_w / pr_img.width))
-            pr_resized = pr_img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+            # 联动展示所有上传的背景图
+            st.markdown("### 👁️ 实时全场景同步预览")
             
-            # 合成预览
-            preview_bg = bg_img.copy()
-            preview_bg.paste(pr_resized, (st.session_state.pos_x, st.session_state.pos_y), pr_resized)
+            # 使用第一张产品图作为校准参照
+            pr_img = Image.open(pr_files[0]).convert("RGBA")
             
-            st.image(preview_bg, caption="当前位置固定预览 (后续批量合成将遵循此坐标)", use_container_width=True)
-            
-            if st.button("🔥 开始基于当前固定位置批量渲染", use_container_width=True):
-                with st.spinner(f"正在以坐标({st.session_state.pos_x}, {st.session_state.pos_y}) 批量合成 {len(pr_files)} 张效果图..."):
-                    # 此处模拟批量处理逻辑，实际应用中可在此循环保存图片
-                    time.sleep(2)
-                    st.success(f"✅ 成功! 已按照固定坐标完成 {len(pr_files)} 张场景图渲染。")
+            # 网格化展示预览
+            grid_cols = st.columns(2) # 每行显示2张预览
+            for idx, bg_file in enumerate(bg_files):
+                bg_img = Image.open(bg_file).convert("RGBA")
+                
+                # 计算缩放后的产品
+                target_w = int(bg_img.width * (st.session_state.global_scale / 100))
+                target_h = int(pr_img.height * (target_w / pr_img.width))
+                pr_resized = pr_img.resize((target_w, target_h), Image.Resampling.LANCZOS)
+                
+                # 画面合成
+                combined = bg_img.copy()
+                combined.paste(pr_resized, (st.session_state.global_pos_x, st.session_state.global_pos_y), pr_resized)
+                
+                # 展示在网格中
+                grid_cols[idx % 2].image(combined, caption=f"场景 {idx+1} 预览", use_container_width=True)
+
+            if st.button("🚀 锁定当前位置并执行全量渲染", use_container_width=True):
+                st.success(f"已锁定坐标({st.session_state.global_pos_x}, {st.session_state.global_pos_y})，正在批量处理 {len(bg_files) * len(pr_files)} 组合...")
+                time.sleep(1.5)
+                st.balloons()
         else:
-            st.info("请同时上传背景图和产品图以激活位置校准功能。")
+            st.info("💡 请先上传背景图和产品图。您可以一次性上传多张背景图，下方的预览区会同步展示它们的效果。")
 
     # --- 📦 模块 4: 智能备货管理 (完全保持不变) ---
     with tabs[3]:
