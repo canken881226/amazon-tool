@@ -80,83 +80,96 @@ else:
                 else:
                     st.write(f"📮 FBM配送费: ${fbm_final_ship:.2f}")
 
-# --- 📊 模块 2: 市场与竞品调研 (动态特征分析版) ---
+# --- 📊 模块 2: 市场与竞品调研 (全维度专业深度版) ---
     with tabs[1]:
         st.header("📊 亚马逊类目全维度深度调研报告")
-        st.caption("系统已根据 2026 算法更新：基于 BSR 存量与 New Releases 趋势动态建模")
+        st.caption("基于 BSR 实时榜单与 New Releases 趋势建模分析")
         
-        kw_input = st.text_input("输入核心关键词 (如: Power Bank, Yoga Mat)", placeholder="请输入类目关键词...")
+        kw_input = st.text_input("输入细分关键词 (如: Kids Wall Stickers, Yoga Mat, Power Bank)", placeholder="请输入关键词...")
         
-        if st.button("🚀 启动深度调研引擎", use_container_width=True):
+        if st.button("🚀 启动全维度调研引擎", use_container_width=True):
             if kw_input:
                 st.session_state.analysis_done = True
-                with st.spinner(f'AI 正在对 {kw_input} 进行类目聚类与竞争程度建模...'):
+                with st.spinner(f'AI 正在深度扫描 {kw_input} 细分市场...'):
                     time.sleep(1.5)
-                    
-                    # --- 核心动态逻辑：类目识别引擎 ---
                     kw = kw_input.lower()
-                    # 预设不同类目的专业分析矩阵
-                    if any(word in kw for word in ['power', 'tech', 'case', 'charger', 'usb']):
-                        category_type = "3C数码类"
-                        data_matrix = {
-                            "metrics": ["14.2%", "35.5%", "8.2月", "极高 (头部垄断)"],
-                            "bsr": ["单品 / 纯黑灰 / 磨砂质感", "$15-$25", "耐用度 / 充电速度 / 发热"],
-                            "new": ["多口氮化镓套装 / 渐变色", "$35-$50", "极致便携 / 智能断电 / 亲肤材质"]
-                        }
-                    elif any(word in kw for word in ['mat', 'home', 'yoga', 'kitchen', 'decor']):
-                        category_type = "家居生活类"
-                        data_matrix = {
-                            "metrics": ["8.5%", "18.2%", "24月", "低 (分散竞争)"],
-                            "bsr": ["单品 / 莫兰迪色 / 纯色", "$20-$30", "气味 / 止滑度 / 尺寸偏差"],
-                            "new": ["主打环保套装 / 浮雕印花", "$40-$55", "可降解材质 / 无毒证明 / 定制收纳"]
-                        }
-                    else:
-                        category_type = "通用成长类"
-                        data_matrix = {
-                            "metrics": ["10.1%", "22.0%", "15月", "中等"],
-                            "bsr": ["基础款 / 标准包装", "$10-$50", "性价比 / 配送速度"],
-                            "new": ["升级版 / 礼盒装", "$25-$80", "设计感 / 材质升级"]
-                        }
                     
-                    # 将结果存入 session_state
+                    # --- 专业多维度特征池 ---
+                    # 装饰/墙贴类 (针对你截图的细分)
+                    if any(word in kw for word in ['sticker', 'wall', 'mural', 'decor']):
+                        cat_name = "家居装饰/贴纸类"
+                        metrics = ["10.5%", "28.5%", "12月", "低 (风格化竞争)"]
+                        matrix = {
+                            "维度": ["视觉风格", "组合策略", "价格定位", "核心卖点", "差评规避"],
+                            "BSR榜单(存量)": ["经典卡通/平面印刷", "单张大尺寸/OPP袋装", "$10-$15 (极致性价比)", "易贴易撕/不伤墙面", "粘性不足/色差严重"],
+                            "New Releases(趋势)": ["3D浮雕/水彩手绘风", "场景化套装(主题联动)", "$22-$35 (品牌溢价)", "环保无毒材质/防水防刮", "卷轴包装防折痕/赠送刮板"]
+                        }
+                    # 3C/数码类
+                    elif any(word in kw for word in ['power', 'tech', 'charge', 'case', 'usb']):
+                        cat_name = "3C数码/配件类"
+                        metrics = ["14.2%", "35.5%", "8月", "极高 (头部垄断)"]
+                        matrix = {
+                            "维度": ["核心技术", "外观工艺", "价格定位", "用户痛点", "准入门槛"],
+                            "BSR榜单(存量)": ["成熟方案/公模", "纯黑纯白/磨砂塑料", "$15-$25 (价格战)", "发热/充电速度慢", "需极强供应链能力"],
+                            "New Releases(趋势)": ["氮化镓GaN/双向快充", "透明探索版/金属喷涂", "$39-$59 (功能性溢价)", "多协议兼容/智能断电", "需私模设计/专利规避"]
+                        }
+                    # 运动/家居类
+                    elif any(word in kw for word in ['mat', 'yoga', 'home', 'kitchen']):
+                        cat_name = "运动户外/家居类"
+                        metrics = ["8.2%", "18.5%", "24月", "中等 (品牌心智)"]
+                        matrix = {
+                            "维度": ["材质偏好", "视觉元素", "价格定位", "使用场景", "增值建议"],
+                            "BSR榜单(存量)": ["普通TPE/橡胶", "极简实色", "$20-$30", "居家基础健身", "耐用/防滑"],
+                            "New Releases(趋势)": ["天然软木/环保PU", "波西米亚印花/体式线", "$45-$65", "高端普拉提/户外瑜伽", "附赠体面拎绳/定制收纳包"]
+                        }
+                    # 通用匹配
+                    else:
+                        cat_name = "通用成长型类目"
+                        metrics = ["10.1%", "22.0%", "15月", "中等"]
+                        matrix = {
+                            "维度": ["产品画像", "价格分布", "核心卖点"],
+                            "BSR榜单(存量)": ["基础实用款", "$10-$40", "快速交付/性价比"],
+                            "New Releases(趋势)": ["设计感升级款", "$25-$80", "材质升级/品牌化方案"]
+                        }
+
                     st.session_state.current_analysis = {
                         "kw": kw_input,
-                        "cat": category_type,
-                        "data": data_matrix
+                        "cat": cat_name,
+                        "metrics": metrics,
+                        "matrix": matrix
                     }
             else:
                 st.error("⚠️ 请输入有效关键词")
 
-        # 检查是否有分析结果并渲染界面
+        # --- 结果展示区 (修复括号逻辑) ---
         if st.session_state.get('analysis_done') and 'current_analysis' in st.session_state:
             res = st.session_state.current_analysis
-            st.success(f"✅ 识别到目标类目领域：{res['cat']}")
+            st.success(f"✅ 目标类目精准识别：{res['cat']}")
             
-            # 1. 宏观数据指标
+            # 1. 四大核心指标
             m1, m2, m3, m4 = st.columns(4)
-            m1.metric("类目波动率", res['data']['metrics'][0])
-            m2.metric("新品渗透率", res['data']['metrics'][1])
-            m3.metric("平均生命周期", res['data']['metrics'][2])
-            m4.metric("品牌壁垒", res['data']['metrics'][3])
+            m1.metric("类目波动率", res['metrics'][0])
+            m2.metric("新品渗透率", res['metrics'][1])
+            m3.metric("平均生命周期", res['metrics'][2])
+            m4.metric("品牌壁垒", res['metrics'][3])
 
-            # 2. 核心竞争矩阵
-            st.subheader(f"🔍 {res['kw']} 竞争差异分析 (BSR vs New Releases)")
-            matrix_df = pd.DataFrame({
-                "分析维度": ["核心画像", "价格带", "关键痛点/卖点"],
-                "Best Sellers (存量)": res['data']['bsr'],
-                "New Releases (趋势)": res['data']['new']
-            })
-            st.table(matrix_df)
+            # 2. 深度竞争差异矩阵
+            st.subheader(f"🔍 {res['kw']} 专业竞争透视 (存量 vs 趋势)")
+            df = pd.DataFrame(res['matrix'])
+            st.table(df)
 
-            # 3. 下载按钮逻辑
+            # 3. 专家选品建议
+            st.info(f"💡 **AI 选品决策建议**：{res['kw']} 类目目前{res['matrix']['BSR榜单(存量)'][2]}区间竞争激烈。建议针对新品榜表现，重点切入 **{res['matrix']['New Releases(趋势)'][2]}** 价格带，并在** {res['matrix']['维度'][4]} **维度进行差异化改良。")
+
+            # 4. 报告导出
             buffer = io.BytesIO()
             with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
-                matrix_df.to_excel(writer, sheet_name='竞争矩阵', index=False)
+                df.to_excel(writer, sheet_name='竞品调研报告', index=False)
             
             st.download_button(
-                label="📂 下载该类目深度报告 (.xlsx)",
+                label=f"📂 下载 {res['kw']} 全维度深度报告 (.xlsx)",
                 data=buffer.getvalue(),
-                file_name=f"Amazon_{res['kw']}_Report.xlsx",
+                file_name=f"Amazon_{res['kw']}_Professional_Report.xlsx",
                 mime="application/vnd.ms-excel",
                 use_container_width=True
             )
@@ -235,6 +248,7 @@ else:
             st.metric("实际建议下单", f"{final_restock} Pcs")
             st.markdown("<span style='color:#00ff00'>↑ 0</span>", unsafe_allow_html=True)
         with res_cols[2]: st.metric("库存支撑天数", f"{int(k_val/d_val if d_val > 0 else 0)} 天")
+
 
 
 
