@@ -85,7 +85,7 @@ else:
         st.header("📊 亚马逊类目全维度深度调研报告")
         st.caption("系统已根据 2026 算法更新：基于 BSR 存量与 New Releases 趋势动态建模")
         
-        kw_input = st.text_input("输入核心关键词 (如: Power Bank, Yoga Mat, T-Shirt)", placeholder="请输入类目关键词...")
+        kw_input = st.text_input("输入核心关键词 (如: Power Bank, Yoga Mat)", placeholder="请输入类目关键词...")
         
         if st.button("🚀 启动深度调研引擎", use_container_width=True):
             if kw_input:
@@ -118,7 +118,7 @@ else:
                             "new": ["升级版 / 礼盒装", "$25-$80", "设计感 / 材质升级"]
                         }
                     
-                    # 将结果存入 session_state 确保结果唯一
+                    # 将结果存入 session_state
                     st.session_state.current_analysis = {
                         "kw": kw_input,
                         "cat": category_type,
@@ -127,7 +127,8 @@ else:
             else:
                 st.error("⚠️ 请输入有效关键词")
 
-        if st.session_state.analysis_done and 'current_analysis' in st.session_state:
+        # 检查是否有分析结果并渲染界面
+        if st.session_state.get('analysis_done') and 'current_analysis' in st.session_state:
             res = st.session_state.current_analysis
             st.success(f"✅ 识别到目标类目领域：{res['cat']}")
             
@@ -147,13 +148,10 @@ else:
             })
             st.table(matrix_df)
 
-            # 3. 开发决策
-            st.info(f"💡 **AI 选品官建议**：当前 {res['kw']} 市场建议走【高溢价+差异化】路线。BSR 痛点集中在 {res['data']['bsr'][2]}，建议在新品设计中重点优化 {res['data']['new'][2]}。")
-
-            # 📥 下载按钮逻辑 (根据当前动态结果生成)
+            # 3. 下载按钮逻辑
             buffer = io.BytesIO()
             with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
-                matrix_df.to_excel(writer, sheet_name='竞争矩阵')
+                matrix_df.to_excel(writer, sheet_name='竞争矩阵', index=False)
             
             st.download_button(
                 label="📂 下载该类目深度报告 (.xlsx)",
@@ -162,8 +160,6 @@ else:
                 mime="application/vnd.ms-excel",
                 use_container_width=True
             )
-            )
-
 # --- 🖼️ 模块 3: 场景批量渲染 (分场景独立校准版) ---
     with tabs[2]:
         st.header("🖼️ 场景批量渲染 (各场景独立定位)")
@@ -239,6 +235,7 @@ else:
             st.metric("实际建议下单", f"{final_restock} Pcs")
             st.markdown("<span style='color:#00ff00'>↑ 0</span>", unsafe_allow_html=True)
         with res_cols[2]: st.metric("库存支撑天数", f"{int(k_val/d_val if d_val > 0 else 0)} 天")
+
 
 
 
