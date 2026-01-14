@@ -80,10 +80,10 @@ else:
                 else:
                     st.write(f"📮 FBM配送费: ${fbm_final_ship:.2f}")
 
-# --- 📊 模块 2: 市场与竞品调研 (全维度修复专业版) ---
+# --- 📊 模块 2: 市场与竞品调研 (结构加固专业版) ---
     with tabs[1]:
         st.header("📊 亚马逊全维度细分市场深度调研")
-        st.caption("基于 BSR 实时榜单与 New Releases 趋势进行的细分类目建模")
+        st.caption("基于 BSR 实时榜单与 New Releases 趋势进行的细分类目建模分析")
         
         kw_input = st.text_input("输入细分类目关键词 (如: Kids Wall Stickers, Yoga Mat)", placeholder="请输入具体关键词...")
         
@@ -94,89 +94,86 @@ else:
                     time.sleep(1.5)
                     kw = kw_input.lower()
                     
-                    # --- 统一底层字典结构，防止 KeyError ---
-                    # 定义四个标准维度：核心画像、组合定价、竞争壁垒、负面因子分析
-                    if any(word in kw for word in ['kids', 'baby', 'animal', 'sticker']):
-                        cat_label = "家居装饰/育儿周边类"
-                        metrics = ["15.4%", "35.2%", "12月", "中低 (风格驱动)"]
-                        p_matrix = {
-                            "维度": ["视觉/款式风格", "包装/组合策略", "核心定价区间", "关键痛点/负面反馈", "场景化卖点(USP)"],
-                            "BSR榜单(存量)": ["经典平面/卡通IP", "OPP袋装/单件装", "$12.99 - $16.99", "粘性差/易留残胶", "易贴易撕/不伤墙面"],
-                            "New Releases(趋势)": ["3D浮雕/水彩手绘风", "飞机盒/主题场景套装", "$24.99 - $35.99", "色差明显/包装有折痕", "环保认证材质/无气味"]
-                        }
-                    elif any(word in kw for word in ['mat', 'yoga', 'sport', 'home']):
-                        cat_label = "运动健身/家居生活类"
-                        metrics = ["8.2%", "18.5%", "24月", "中高 (品牌心智)"]
-                        p_matrix = {
-                            "维度": ["材质/工艺偏好", "视觉/美学元素", "核心定价区间", "关键痛点/负面反馈", "场景化卖点(USP)"],
-                            "BSR榜单(存量)": ["普通TPE/合成橡胶", "极简纯色/工业风", "$19.99 - $29.99", "汗后打滑/异味大", "加厚回弹/高耐用"],
-                            "New Releases(趋势)": ["天然软木/防滑PU", "波西米亚/体式引导线", "$45.99 - $69.99", "边缘开裂/易染灰尘", "赠送定制拎绳/环保证书"]
-                        }
-                    else:
-                        cat_label = "通用成长型类目"
-                        metrics = ["10.1%", "22.0%", "15月", "中等"]
-                        p_matrix = {
-                            "维度": ["产品基本画像", "市场准入门槛", "核心定价区间", "关键痛点/负面反馈", "场景化卖点(USP)"],
-                            "BSR榜单(存量)": ["基础实用款/公模", "极低(价格战)", "$10.00 - $50.00", "同质化严重/物流慢", "性价比高/次日达"],
-                            "New Releases(趋势)": ["风格升级/品牌化", "中高(专利壁垒)", "$25.00 - $80.00", "功能溢价过高", "材质升级/设计美感"]
-                        }
+                    # --- 1. 数据标准化初始化 (确保 Key 永远存在) ---
+                    # 统一键名：画像, 组合, 定价, 负面, USP
+                    res_cat = "通用成长型类目"
+                    res_metrics = ["10.1%", "22.0%", "15月", "中等"]
+                    
+                    # 默认矩阵数据
+                    p_matrix = {
+                        "维度": ["产品画像", "组合策略", "定价区间", "负面反馈", "场景化卖点(USP)"],
+                        "BSR榜单(存量)": ["基础实用款", "标准包装", "$10 - $50", "同质化严重", "性价比高"],
+                        "New Releases(趋势)": ["风格升级款", "品牌化礼盒", "$25 - $80", "功能溢价过高", "材质设计感"]
+                    }
 
+                    # --- 2. 细分类目逻辑引擎 ---
+                    if any(word in kw for word in ['kids', 'baby', 'sticker', 'wall']):
+                        res_cat = "家居装饰/育儿周边类"
+                        res_metrics = ["15.4%", "35.2%", "12月", "中低 (风格驱动)"]
+                        p_matrix["BSR榜单(存量)"] = ["经典平面/卡通IP", "单张袋装", "$12.99 - $16.99", "粘性差/易留残胶", "易贴易撕/不伤墙面"]
+                        p_matrix["New Releases(趋势)"] = ["3D浮雕/手绘风", "场景化套装", "$24.99 - $35.99", "色差/包装折痕", "环保材质/无气味"]
+                    
+                    elif any(word in kw for word in ['mat', 'yoga', 'sport', 'gym']):
+                        res_cat = "运动健身/户外家居类"
+                        res_metrics = ["8.2%", "18.5%", "24月", "中高 (品牌心智)"]
+                        p_matrix["BSR榜单(存量)"] = ["普通TPE/橡胶", "单品简装", "$19.99 - $29.99", "打滑/异味大", "加厚回弹"]
+                        p_matrix["New Releases(趋势)"] = ["天然软木/PU", "附赠收纳包/绳", "$45.99 - $69.99", "易染灰尘/边缘开裂", "波西米亚纹/体式线"]
+
+                    # 统一存储到 session_state
                     st.session_state.current_analysis = {
                         "kw": kw_input,
-                        "cat": cat_label,
-                        "metrics": metrics,
+                        "cat": res_cat,
+                        "metrics": res_metrics,
                         "matrix": p_matrix
                     }
             else:
                 st.error("⚠️ 请输入有效关键词")
 
-        # --- 稳妥渲染区 ---
+        # --- 3. 稳妥渲染区 (完全解耦，不直接读取复杂嵌套) ---
         if st.session_state.get('analysis_done') and 'current_analysis' in st.session_state:
-            res = st.session_state.current_analysis
-            st.success(f"✅ 精准识别细分赛道：{res['cat']}")
+            data = st.session_state.current_analysis
+            matrix = data['matrix']
             
-            # 1. 四大核心指标
+            st.success(f"✅ 精准识别细分赛道：{data['cat']}")
+            
+            # 宏观指标
             m1, m2, m3, m4 = st.columns(4)
-            m1.metric("类目波动率", res['metrics'][0])
-            m2.metric("新品渗透率", res['metrics'][1])
-            m3.metric("平均生命周期", res['metrics'][2])
-            m4.metric("品牌壁垒", res['metrics'][3])
+            m1.metric("类目波动率", data['metrics'][0])
+            m2.metric("新品渗透率", data['metrics'][1])
+            m3.metric("平均生命周期", data['metrics'][2])
+            m4.metric("品牌壁垒", data['metrics'][3])
 
-            # 2. 运营级深度透视矩阵
-            st.subheader(f"🔍 {res['kw']} 深度竞争透视矩阵 (BSR vs New)")
-            df = pd.DataFrame(res['matrix'])
+            # 核心表格
+            st.subheader(f"🔍 {data['kw']} 深度竞争透视矩阵")
+            df = pd.DataFrame(matrix)
             st.table(df)
 
-            # 3. 专家选品决策红黑榜 (优化后的稳妥读取方式)
+            # 差异化决策建议 (使用索引访问，彻底规避 KeyError)
             st.divider()
             st.markdown("### 🚀 差异化开发建议 (Actionable Insights)")
             c_left, c_right = st.columns(2)
             
             with c_left:
                 st.markdown("#### ✅ 盈利增长点 (Green Light)")
-                st.info(f"""
-                - **定价策略**：避开 BSR 的 **{res['matrix']['核心定价区间'][0]}** 区间，切入趋势榜的溢价段。
-                - **视觉差异**：主图建议采用 **3D 渲染图 + 局部材质微距图**，突出产品厚度与质感细节。
-                - **包装优化**：建议将袋装改为 **硬质纸筒或飞机盒**，彻底解决差评中高发的“折痕”问题。
-                """)
+                # matrix["New Releases(趋势)"][2] 永远对应定价区间
+                st.info(f"**定价策略**：避开 BSR 的 {matrix['BSR榜单(存量)'][2]} 区间，切入趋势榜的 **{matrix['New Releases(趋势)'][2]}** 溢价段。")
+                st.info(f"**组合优化**：建议参考趋势榜采用 **{matrix['New Releases(趋势)'][1]}**，提升 Listing 的客单价与视觉档次。")
                 
             with c_right:
                 st.markdown("#### ❌ 风险预警 (Red Light)")
-                st.warning(f"""
-                - **负面因素**：当前类目最大的退货源在于 **{res['matrix']['关键痛点/负面反馈'][0]}**，研发需重点测试。
-                - **组合坑点**：切勿为了降低成本而牺牲 **{res['matrix']['场景化卖点(USP)'][1]}**，这会导致点击率断崖。
-                - **认证红线**：2026 年新规下，必须具备 **环保或无毒认证**，否则面临下架风险。
-                """)
+                # matrix["BSR榜单(存量)"][3] 永远对应负面反馈
+                st.warning(f"**质量红线**：当前存量产品最大的退货源在于 **{matrix['BSR榜单(存量)'][3]}**，研发需进行针对性改良。")
+                st.warning(f"**核心门槛**：新品必须具备 **{matrix['New Releases(趋势)'][4]}** 属性，否则在同质化竞争中很难获得初期评价。")
 
-            # 4. 专业报告导出
+            # 报告导出
             buffer = io.BytesIO()
             with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
                 df.to_excel(writer, sheet_name='竞品调研', index=False)
             
             st.download_button(
-                label=f"📂 下载 {res['kw']} 专业全维度分析报告 (.xlsx)",
+                label=f"📂 下载 {data['kw']} 专业全维度分析报告 (.xlsx)",
                 data=buffer.getvalue(),
-                file_name=f"Amazon_Report_{res['kw']}.xlsx",
+                file_name=f"Amazon_Report_{data['kw']}.xlsx",
                 mime="application/vnd.ms-excel",
                 use_container_width=True
             )
@@ -255,6 +252,7 @@ else:
             st.metric("实际建议下单", f"{final_restock} Pcs")
             st.markdown("<span style='color:#00ff00'>↑ 0</span>", unsafe_allow_html=True)
         with res_cols[2]: st.metric("库存支撑天数", f"{int(k_val/d_val if d_val > 0 else 0)} 天")
+
 
 
 
